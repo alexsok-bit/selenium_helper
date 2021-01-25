@@ -1,0 +1,40 @@
+{
+  "manifest_version": 2,
+  "version": "0.0.4",
+  "minimum_chrome_version": "76.0",
+  "applications": {
+    "gecko": {
+      "id": "eet1ra8cauDu@AlexandrSokolov"
+    }
+  },
+  "default_locale": "en",
+  "name": "__MSG_name__",
+  "short_name": "__MSG_name__",
+  "description": "__MSG_description__",
+  "author": "Alexandr Sokolov",
+  "homepage_url": "https://github.com/alexsok-bit/selenium_helper",
+  "icons": {
+    "32": "app32.png",
+    "64": "app64.png",
+    "128": "app128.png"
+  },
+  "permissions": [
+    "proxy",
+    "storage",
+    "cookies",
+    "webRequest",
+    "webRequestBlocking",
+    "<all_urls>"
+  ],
+  "options_ui": {
+    "page": "data/options.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "eet1ra8cauDu@AlexandrSokolov"
+    }
+  },
+  "background": {
+      "scripts": ["data/content.js"]
+  }
+}
