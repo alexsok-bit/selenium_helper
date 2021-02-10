@@ -68,6 +68,37 @@ function set_proxy(PROXY) {
 }
 
 
+function set_headers(HEADERS) {
+
+    function rewriteRequestHeader(requestDetails) {
+
+        for (let key in HEADERS) {
+            to_modify = {"name": key, "value": HEADERS[key]};
+
+            is_set = false;
+
+            for (let header of requestDetails.requestHeaders) {
+              if (header.name.toLowerCase() === to_modify.name.toLowerCase()) {
+                header.value = to_modify.value;
+                is_set = true;
+              }
+            }
+
+            if (!is_set) {
+                requestDetails.requestHeaders.push(to_modify)
+            }
+        }
+
+        return {requestHeaders: requestDetails.requestHeaders}
+    }
+
+    const TARGET = "<all_urls>";
+    chrome.webRequest.onBeforeSendHeaders.addListener(rewriteRequestHeader,
+      { urls: [TARGET] },
+      ["blocking", "requestHeaders"]);
+}
+
+
 function main() {
 
     function setProxy(result) {
@@ -84,9 +115,19 @@ function main() {
         }
     }
 
+    function setHeaders(result) {
+        if (result.headers) {
+            console.log("Setup headers...");
+            set_headers(result.headers);
+        }
+    }
+
     function onError(error) {
         console.log(`Error: ${error}`);
     }
+
+    let headers = browser.storage.sync.get("headers");
+    headers.then(setHeaders, onError);
 
     let proxy = browser.storage.sync.get("proxy");
     proxy.then(setProxy, onError);

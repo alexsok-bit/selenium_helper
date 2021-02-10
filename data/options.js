@@ -1,8 +1,12 @@
 function saveOptions(e) {
     e.preventDefault();
     let cookies = [];
+    let headers = [];
     try {
         cookies = JSON.parse(document.getElementById("cookies").value);
+    } catch {};
+    try {
+        headers = JSON.parse(document.getElementById("headers").value);
     } catch {};
     console.log(cookies)
     browser.storage.sync.set({
@@ -13,8 +17,21 @@ function saveOptions(e) {
             "username": document.getElementById("username").value,
             "password": document.getElementById("password").value
         },
-        cookies: cookies
+        cookies: cookies,
+        headers: headers
     });
+
+    return false;
+}
+
+
+function saveOptionsEx(proxy, cookies, headers) {
+    browser.storage.sync.set({
+        proxy: proxy,
+        cookies: cookies,
+        headers: headers
+    });
+    browser.runtime.sendMessage({"update": true});
 }
 
 
@@ -36,9 +53,18 @@ function restoreOptions() {
         }
     }
 
+    function setCurrentHeaders(result) {
+        if (result.headers) {
+            document.getElementById("headers").value = JSON.stringify(result.headers);
+        }
+    }
+
     function onError(error) {
         console.log(`Error: ${error}`);
     }
+
+    let headers = browser.storage.sync.get("headers");
+    headers.then(setCurrentHeaders, onError);
 
     let proxy = browser.storage.sync.get("proxy");
     proxy.then(setCurrentProxy, onError);
