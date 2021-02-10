@@ -1,5 +1,6 @@
 import logging
 import os.path
+import os
 
 import selenium.webdriver
 
@@ -8,6 +9,11 @@ import selenium_helper
 
 def main():
     logger = logging.getLogger(__name__)
+
+    if "FIREFOX_PROXY" not in os.environ:
+        logger.error("Setup FIREFOX_PROXY in environment and try again!")
+        raise SystemExit(1)
+
     profile = selenium.webdriver.FirefoxProfile()
     # отключаем предупреждение при открытии about:config
     profile.set_preference("browser.aboutConfig.showWarning", False)
@@ -21,12 +27,14 @@ def main():
 
     try:
         selenium_helper_extention = selenium_helper.SeleniumHelperExtension(driver)
-        selenium_helper_extention.install(os.path.abspath("releases/selenium_helper-0.0.4-fx.xpi"))
-        proxy = "http://username:password@host:port"
+        selenium_helper_extention.install(os.path.abspath("releases/selenium_helper-0.0.6-fx.xpi"))
+        # http://username:password@host:port
+        proxy = os.environ["FIREFOX_PROXY"]
         cookies = [
             selenium_helper.Cookie(name="cookie", value="test", url="https://whoer.net")
         ]
-        selenium_helper_extention.begin_options().set_proxy(proxy).set_cookies(cookies).apply_options()
+
+        selenium_helper_extention.begin_options().push(proxy, cookies, {})
 
         driver.get("https://whoer.net/")
         input("Enter to exit...")

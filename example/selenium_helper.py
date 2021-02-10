@@ -9,7 +9,7 @@ import copy
 import json
 import urllib.parse
 from functools import lru_cache
-from typing import List
+from typing import List, Dict
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox
@@ -21,6 +21,7 @@ OPTION_PROXY_PORT = "proxy_port"
 OPTION_PROXY_USERNAME = "proxy_username"
 OPTION_PROXY_PASSWORD = "proxy_password"
 OPTION_PROXY_COOKIES = "proxy_cookies"
+OPTION_HEADERS = "headers"
 
 
 class NoAddonException(Exception):
@@ -142,18 +143,18 @@ class Cookie(dict):
     @path.deleter
     def path(self):
         del self["path"]
-    
+
     @property
     def same_site(self):
         """A cookies.SameSiteStatus value that indicates the SameSite state of the cookie.
         If omitted, it defaults to 0, 'no_restriction'.
         https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/cookies/SameSiteStatus"""
         return self.get("sameSite")
-    
+
     @same_site.setter
     def same_site(self, value):
         self["sameSite"] = value
-    
+
     @same_site.deleter
     def same_site(self):
         del self["sameSite"]
@@ -226,7 +227,8 @@ class SeleniumHelperExtension:
         OPTION_PROXY_PORT: "port",
         OPTION_PROXY_USERNAME: "username",
         OPTION_PROXY_PASSWORD: "password",
-        OPTION_PROXY_COOKIES: "cookies"
+        OPTION_PROXY_COOKIES: "cookies",
+        OPTION_HEADERS: "headers"
     }
 
     def __init__(self, driver: Firefox, raise_for_about_config=True):
@@ -277,8 +279,11 @@ class SeleniumHelperExtension:
         self._fill_option(OPTION_PROXY_TYPE, proxy.scheme)
         self._fill_option(OPTION_PROXY_HOST, proxy.hostname)
         self._fill_option(OPTION_PROXY_PORT, proxy.port)
-        self._fill_option(OPTION_PROXY_USERNAME, proxy.username)
-        self._fill_option(OPTION_PROXY_PASSWORD, proxy.password)
+        try:
+            self._fill_option(OPTION_PROXY_USERNAME, proxy.username)
+            self._fill_option(OPTION_PROXY_PASSWORD, proxy.password)
+        except TypeError:
+            pass
         return self
 
     def set_cookies(self, cookies: List[Cookie], default_url=None, ignore_errors=False):
@@ -292,9 +297,34 @@ class SeleniumHelperExtension:
         self._fill_option(OPTION_PROXY_COOKIES, value)
         return self
 
+    def set_headers(self, headers: List[Dict[str, str]]):
+        """устанавливаем заголовки браузера, для всех запросов."""
+        value = json.dumps(headers)
+        self._fill_option(OPTION_HEADERS, value)
+        return self
+
+    def push(self, proxy, cookies, headers):
+
+        if proxy:
+            proxy = urllib.parse.urlparse(proxy)
+            proxy = {
+                "type": proxy.scheme,
+                "host": proxy.hostname,
+                "port": proxy.port,
+                "username": proxy.username,
+                "password": proxy.password
+            }
+
+        js = f"""saveOptionsEx({json.dumps(proxy)}, {json.dumps(cookies)}, {json.dumps(headers)});"""
+        self._driver.execute_script(js)
+        return self
+
     def apply_options(self):
         """сохраняем изменения сделанные на странице настроек"""
         self._driver.find_element_by_id("submit").click()
+
+    def clear_cookies(self, cookies: List[Cookie], default_url=None, ignore_errors=False):
+        return self._clear_cookies(cookies, default_url, ignore_errors)
 
     def _clear_cookies(self, cookies: List[Cookie], default_url=None, ignore_errors=False):
         clear_value = []
