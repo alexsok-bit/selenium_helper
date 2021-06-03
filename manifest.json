@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "0.0.6",
+  "version": "0.1.6",
   "minimum_chrome_version": "76.0",
   "applications": {
     "gecko": {
@@ -14,9 +14,7 @@
   "author": "Alexandr Sokolov",
   "homepage_url": "https://github.com/alexsok-bit/selenium_helper",
   "icons": {
-    "32": "app32.png",
-    "64": "app64.png",
-    "128": "app128.png"
+    "48": "icon.png"
   },
   "permissions": [
     "proxy",
@@ -30,6 +28,6 @@
     "page": "data/options.html"
   },
   "background": {
-      "scripts": ["data/content.js"]
+      "scripts": ["data/content.js", "data/hcaptcha/background.js"]
   }
 }

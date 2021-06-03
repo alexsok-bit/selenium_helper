@@ -1,8 +1,8 @@
 {
   "name": {
-    "message": "Selenium helper for setup proxy and cookies"
+    "message": "Selenium Helper"
   },
   "description": {
-    "message": "Setup proxy with authentication and cookies"
+    "message": "Setup proxy with authentication, cookies and support bypass hСaptcha"
   }
 }

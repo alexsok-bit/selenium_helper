@@ -1,5 +1,8 @@
 .idea/
 bin/
+releases/
+free-icon-robotic-leg-4829820.png
+
 # Created by .ignore support plugin (hsz.mobi)
 __pycache__/
 *.py[cod]
